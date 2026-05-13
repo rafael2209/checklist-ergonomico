@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Check List Ergonômico – Grupo Villas Boas</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════
+   TOKENS
+══════════════════════════════════════ */
+:root {
+  --teal:     #1A7A6E;
+  --teal-dk:  #0F5248;
+  --teal-xl:  #EDF7F5;
+  --teal-lt:  #C8E8E4;
+  --teal-md:  #7DCBC2;
+  --amber:    #E8970A;
+  --amber-lt: #FFF3D6;
+  --ok:       #1B8C50;
+  --ok-lt:    #D4F0E3;
+  --bad:      #C93B2A;
+  --bad-lt:   #FDE8E5;
+  --na:       #7B8794;
+  --na-lt:    #EEF0F2;
+  --bg:       #F0F4F3;
+  --card:     #FFFFFF;
+  --border:   #D4E0DE;
+  --text:     #182523;
+  --muted:    #6A8480;
+  --r:        13px;
+  --r-sm:     8px;
+  --sh:       0 1px 4px rgba(15,82,72,.08), 0 4px 20px rgba(15,82,72,.06);
+  --sh-lg:    0 8px 40px rgba(15,82,72,.14);
+
+  /* risco 5x5 */
+  --r1: #27AE60; --r1t: #fff;
+  --r2: #8BC34A; --r2t: #fff;
+  --r3: #F9C74F; --r3t: #333;
+  --r4: #F4742B; --r4t: #fff;
+  --r5: #D32F2F; --r5t: #fff;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body { font-family:'Sora',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+/* ══════════════════════════════════════
+   VIEWS
+══════════════════════════════════════ */
+.view { display:none; min-height:100vh; animation:fadeIn .2s ease; }
+.view.active { display:block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+/* ══════════════════════════════════════
+   TOP BAR genérica
+══════════════════════════════════════ */
+.top-bar {
+  background:linear-gradient(135deg,var(--teal-dk) 0%,var(--teal) 100%);
+  padding:18px 16px 14px; position:sticky; top:0; z-index:50;
+  box-shadow:0 4px 20px rgba(0,0,0,.22);
+}
+.top-bar-inner { max-width:860px; margin:0 auto; display:flex; align-items:center; gap:10px; }
+.btn-back {
+  width:34px; height:34px; border-radius:8px; background:rgba(255,255,255,.18);
+  border:none; color:#fff; font-size:17px; cursor:pointer; flex-shrink:0;
+  display:grid; place-items:center; transition:background .15s;
+}
+.btn-back:hover { background:rgba(255,255,255,.28); }
+.top-bar h1 { font-size:15px; font-weight:700; color:#fff; }
+.top-bar p  { font-size:10px; color:rgba(255,255,255,.65); margin-top:1px; }
+.top-bar-actions { margin-left:auto; display:flex; gap:8px; }
+.tb-btn {
+  padding:7px 13px; border-radius:8px; background:rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.25); color:#fff; font-family:'Sora',sans-serif;
+  font-size:11px; font-weight:600; cursor:pointer; transition:all .15s; white-space:nowrap;
+}
+.tb-btn:hover { background:rgba(255,255,255,.28); }
+.tb-btn.amber { background:var(--amber); border-color:var(--amber); }
+.tb-btn.amber:hover { background:#c97f00; }
+
+.prog-wrap { height:3px; background:rgba(255,255,255,.2); margin-top:10px; border-radius:2px; }
+.prog-bar  { height:3px; border-radius:2px; background:var(--amber); transition:width .4s; width:0; }
+
+/* ══════════════════════════════════════
+   WRAP / LAYOUT
+══════════════════════════════════════ */
+.page-wrap { max-width:860px; margin:0 auto; padding:20px 16px 100px; }
+
+/* ══════════════════════════════════════
+   HOME / HISTÓRICO
+══════════════════════════════════════ */
+.home-nav {
+  display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:24px;
+}
+@media(max-width:480px){ .home-nav { grid-template-columns:1fr; } }
+.nav-card {
+  background:var(--card); border-radius:var(--r); border:1.5px solid var(--border);
+  padding:18px 16px; cursor:pointer; transition:all .15s; box-shadow:var(--sh);
+  text-align:center;
+}
+.nav-card:hover { transform:translateY(-2px); box-shadow:var(--sh-lg); border-color:var(--teal-md); }
+.nav-card .nc-icon { font-size:30px; margin-bottom:8px; }
+.nav-card h3 { font-size:13px; font-weight:700; margin-bottom:3px; }
+.nav-card p  { font-size:11px; color:var(--muted); }
+.nav-card.primary { background:var(--teal); border-color:var(--teal); color:#fff; }
+.nav-card.primary p { color:rgba(255,255,255,.7); }
+
+.sect-title { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:10px; }
+
+.hist-empty { text-align:center; padding:48px 20px; color:var(--muted); font-size:13px; line-height:1.9; }
+.hist-empty .big { font-size:44px; margin-bottom:10px; }
+
+.insp-card {
+  background:var(--card); border-radius:var(--r); box-shadow:var(--sh);
+  border:1px solid var(--border); margin-bottom:10px; overflow:hidden;
+}
+.insp-card-top { display:flex; align-items:center; gap:12px; padding:13px 15px; cursor:pointer; }
+.insp-icon { width:40px; height:40px; border-radius:9px; background:var(--teal-xl); display:grid; place-items:center; font-size:17px; flex-shrink:0; }
+.insp-meta { flex:1; min-width:0; }
+.insp-meta h3 { font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.insp-meta p  { font-size:10px; color:var(--muted); margin-top:1px; }
+.risk-badge {
+  padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700;
+  white-space:nowrap; flex-shrink:0;
+}
+.insp-stats { display:flex; gap:12px; padding:0 15px 10px; flex-wrap:wrap; }
+.s-chip { font-size:10px; font-weight:600; display:flex; align-items:center; gap:4px; }
+.s-dot  { width:7px; height:7px; border-radius:50%; }
+.insp-actions { display:flex; gap:8px; padding:0 15px 12px; }
+.btn-sm {
+  padding:6px 13px; border-radius:7px; font-family:'Sora',sans-serif;
+  font-size:11px; font-weight:600; cursor:pointer; border:none;
+  display:flex; align-items:center; gap:5px; transition:all .15s;
+}
+.btn-dl  { background:var(--teal); color:#fff; }
+.btn-dl:hover { background:var(--teal-dk); }
+.btn-del { background:var(--bg); color:var(--muted); border:1px solid var(--border); }
+.btn-del:hover { color:var(--bad); border-color:var(--bad); }
+
+/* ══════════════════════════════════════
+   CADASTRO
+══════════════════════════════════════ */
+.cad-tabs { display:flex; gap:6px; margin-bottom:16px; }
+.cad-tab {
+  padding:8px 16px; border-radius:8px; font-family:'Sora',sans-serif;
+  font-size:12px; font-weight:600; cursor:pointer; border:1.5px solid var(--border);
+  background:var(--card); color:var(--muted); transition:all .15s;
+}
+.cad-tab.active { background:var(--teal); color:#fff; border-color:var(--teal); }
+
+.cad-panel { display:none; }
+.cad-panel.active { display:block; }
+
+.cad-add-row { display:flex; gap:8px; margin-bottom:14px; }
+.cad-input {
+  flex:1; padding:10px 12px; border:1.5px solid var(--border);
+  border-radius:9px; font-family:'Sora',sans-serif; font-size:13px;
+  background:var(--card); color:var(--text); outline:none; transition:border-color .2s;
+}
+.cad-input:focus { border-color:var(--teal); }
+.cad-add-btn {
+  padding:10px 16px; border-radius:9px; background:var(--teal); color:#fff;
+  border:none; font-family:'Sora',sans-serif; font-size:13px; font-weight:600;
+  cursor:pointer; flex-shrink:0; transition:background .15s;
+}
+.cad-add-btn:hover { background:var(--teal-dk); }
+
+.cad-list { display:flex; flex-direction:column; gap:6px; }
+.cad-item {
+  display:flex; align-items:center; gap:10px; padding:10px 13px;
+  background:var(--card); border-radius:9px; border:1px solid var(--border);
+  box-shadow:var(--sh);
+}
+.cad-item-icon { font-size:15px; flex-shrink:0; }
+.cad-item-text { flex:1; font-size:13px; font-weight:500; }
+.cad-item-sub  { font-size:10px; color:var(--muted); margin-top:1px; }
+.cad-del {
+  background:none; border:none; color:var(--muted); cursor:pointer;
+  font-size:15px; padding:2px; line-height:1; transition:color .15s;
+}
+.cad-del:hover { color:var(--bad); }
+
+/* funcionário: setor secundário */
+.cad-row2 { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+.cad-row2 .cad-input { min-width:140px; }
+.cad-sel {
+  flex:1; min-width:140px; padding:10px 12px; border:1.5px solid var(--border);
+  border-radius:9px; font-family:'Sora',sans-serif; font-size:13px;
+  background:var(--card); color:var(--text); outline:none;
+}
+.cad-sel:focus { border-color:var(--teal); }
+
+/* ══════════════════════════════════════
+   FORMULÁRIO
+══════════════════════════════════════ */
+.summary-row {
+  display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;
+  background:var(--card); border-radius:var(--r); padding:11px 14px;
+  border:1px solid var(--border); box-shadow:var(--sh);
+}
+
+.sc { background:var(--card); border-radius:var(--r); box-shadow:var(--sh); border:1px solid var(--border); margin-bottom:14px; overflow:hidden; }
+.sc-head { background:var(--teal); padding:10px 15px; display:flex; align-items:center; gap:9px; }
+.sc-num  { width:22px; height:22px; border-radius:50%; background:rgba(255,255,255,.25); display:grid; place-items:center; font-size:10px; font-weight:800; color:#fff; flex-shrink:0; }
+.sc-head h2 { font-size:11px; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:.5px; }
+.sc-body { padding:15px; }
+
+.fg { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+@media(max-width:480px){ .fg { grid-template-columns:1fr; } }
+.ff { grid-column:1/-1; }
+
+.fl label { display:block; font-size:9px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:4px; }
+.fl input, .fl textarea, .fl select {
+  width:100%; padding:9px 11px; border:1.5px solid var(--border);
+  border-radius:8px; font-family:'Sora',sans-serif; font-size:13px;
+  background:var(--bg); color:var(--text); outline:none; transition:border-color .2s, background .2s;
+}
+.fl input:focus, .fl textarea:focus, .fl select:focus { border-color:var(--teal); background:#fff; }
+.fl textarea { resize:vertical; min-height:64px; }
+
+/* autocomplete */
+.ac-wrap { position:relative; }
+.ac-dropdown {
+  position:absolute; top:100%; left:0; right:0; z-index:100;
+  background:#fff; border:1.5px solid var(--teal); border-radius:8px;
+  box-shadow:0 8px 24px rgba(0,0,0,.12); max-height:180px; overflow-y:auto;
+  display:none;
+}
+.ac-dropdown.show { display:block; }
+.ac-item { padding:9px 12px; font-size:13px; cursor:pointer; transition:background .1s; }
+.ac-item:hover { background:var(--teal-xl); }
+.ac-item strong { font-size:10px; color:var(--muted); display:block; font-weight:500; }
+
+/* ══════════════════════════════════════
+   CHECKLIST ITEMS
+══════════════════════════════════════ */
+.ci { border:1.5px solid var(--border); border-radius:10px; margin-bottom:9px; overflow:hidden; transition:border-color .2s; }
+.ci.s-ok  { border-color:var(--ok); }
+.ci.s-bad { border-color:var(--bad); box-shadow:0 0 0 3px rgba(201,59,42,.07); }
+.ci.s-na  { border-color:var(--na); opacity:.72; }
+
+.ci-top { display:flex; align-items:flex-start; gap:9px; padding:11px 12px 7px; }
+.ci-num { width:28px; height:28px; border-radius:6px; background:var(--teal-xl); color:var(--teal-dk); display:grid; place-items:center; font-size:11px; font-weight:800; font-family:'JetBrains Mono',monospace; flex-shrink:0; }
+.ci-info h3 { font-size:13px; font-weight:700; }
+.ci-info p  { font-size:10px; color:var(--muted); margin-top:2px; line-height:1.4; }
+.ci-sev { margin-left:auto; flex-shrink:0; }
+.ci-sev select {
+  padding:3px 6px; border:1.5px solid var(--border); border-radius:6px;
+  font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600;
+  background:var(--bg); outline:none; cursor:pointer;
+  display:none; /* só aparece quando inadequado */
+}
+.ci-sev select.show { display:block; }
+
+.radio-row { display:flex; gap:5px; padding:0 12px 9px; flex-wrap:wrap; }
+.rb {
+  display:flex; align-items:center; gap:5px; cursor:pointer;
+  padding:5px 12px; border-radius:20px; border:1.5px solid var(--border);
+  font-size:11px; font-weight:600; transition:all .12s; user-select:none; background:var(--bg);
+}
+.rb.sel-ok  { background:var(--ok);  color:#fff; border-color:var(--ok); }
+.rb.sel-bad { background:var(--bad); color:#fff; border-color:var(--bad); }
+.rb.sel-na  { background:var(--na);  color:#fff; border-color:var(--na); }
+
+.obs-wrap { padding:0 12px 11px; display:none; }
+.obs-wrap.show { display:block; }
+.obs-lbl { font-size:9px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; }
+.obs-wrap textarea { width:100%; padding:7px 10px; border:1.5px solid var(--border); border-radius:7px; font-family:'Sora',sans-serif; font-size:12px; background:var(--bg); resize:none; min-height:48px; outline:none; transition:border-color .2s; }
+.obs-wrap textarea:focus { border-color:var(--teal); background:#fff; }
+
+/* ══════════════════════════════════════
+   MATRIZ 5×5 preview
+══════════════════════════════════════ */
+.matrix-box {
+  background:var(--card); border-radius:var(--r); border:1px solid var(--border);
+  box-shadow:var(--sh); margin-bottom:14px; overflow:hidden;
+}
+.matrix-head { background:var(--teal-dk); padding:10px 15px; display:flex; align-items:center; justify-content:space-between; }
+.matrix-head h2 { font-size:11px; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:.5px; }
+.matrix-head span { font-size:10px; color:rgba(255,255,255,.6); }
+.matrix-body { padding:14px; }
+
+.matrix-result {
+  display:flex; align-items:center; gap:12px; padding:12px 14px;
+  border-radius:9px; margin-bottom:12px; border:2px solid transparent;
+}
+.matrix-score {
+  width:52px; height:52px; border-radius:10px; display:grid; place-items:center;
+  font-size:22px; font-weight:800; font-family:'JetBrains Mono',monospace; flex-shrink:0;
+}
+.matrix-desc h3 { font-size:14px; font-weight:700; }
+.matrix-desc p  { font-size:11px; margin-top:2px; line-height:1.5; }
+
+.matrix-grid { display:grid; grid-template-columns:auto repeat(5,1fr); gap:2px; font-size:9px; }
+.mg-corner { }
+.mg-header { text-align:center; font-weight:700; padding:4px 2px; background:var(--teal); color:#fff; border-radius:3px; }
+.mg-row-label { display:flex; align-items:center; justify-content:flex-end; padding-right:4px; font-weight:700; font-size:8px; text-align:right; color:var(--muted); line-height:1.2; }
+.mg-cell {
+  aspect-ratio:1; border-radius:3px; display:grid; place-items:center;
+  font-weight:700; font-size:9px; cursor:default; transition:transform .1s;
+}
+.mg-cell:hover { transform:scale(1.05); }
+.mg-cell.current { outline:2px solid var(--text); outline-offset:1px; }
+
+.items-bad-list { margin-top:10px; }
+.bad-item-row { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--border); font-size:11px; }
+.bad-item-row:last-child { border-bottom:none; }
+.bad-num { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600; color:var(--bad); }
+.bad-sev { padding:1px 8px; border-radius:10px; font-size:9px; font-weight:700; flex-shrink:0; }
+
+/* ══════════════════════════════════════
+   FOTOS
+══════════════════════════════════════ */
+.foto-add-btn {
+  width:100%; padding:13px; border:2px dashed var(--teal-md); border-radius:10px;
+  background:var(--teal-xl); color:var(--teal-dk); font-family:'Sora',sans-serif;
+  font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center;
+  justify-content:center; gap:10px; transition:all .15s; margin-bottom:13px;
+}
+.foto-add-btn:hover { background:var(--teal-lt); border-color:var(--teal); }
+
+.foto-item {
+  border:1.5px solid var(--border); border-radius:10px; overflow:hidden;
+  background:var(--card); margin-bottom:10px;
+}
+.foto-item-head { display:flex; align-items:center; gap:8px; padding:9px 12px; background:var(--teal-xl); border-bottom:1px solid var(--teal-lt); }
+.foto-item-head .fn { font-size:11px; font-weight:700; color:var(--teal-dk); flex:1; }
+.foto-del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px; line-height:1; transition:color .15s; }
+.foto-del:hover { color:var(--bad); }
+
+.foto-content { display:grid; grid-template-columns:120px 1fr; gap:0; }
+@media(max-width:420px){ .foto-content { grid-template-columns:1fr; } }
+.foto-thumb { width:120px; height:100%; object-fit:cover; display:block; min-height:90px; }
+@media(max-width:420px){ .foto-thumb { width:100%; height:140px; } }
+.foto-fields { padding:10px 12px; display:flex; flex-direction:column; gap:6px; }
+.foto-fields label { font-size:9px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; }
+.foto-fields textarea {
+  width:100%; padding:7px 9px; border:1.5px solid var(--border);
+  border-radius:7px; font-family:'Sora',sans-serif; font-size:12px;
+  background:var(--bg); resize:none; outline:none; min-height:54px; flex:1;
+  transition:border-color .2s;
+}
+.foto-fields textarea:focus { border-color:var(--teal); background:#fff; }
+.foto-fields input {
+  width:100%; padding:6px 9px; border:1.5px solid var(--border);
+  border-radius:7px; font-family:'Sora',sans-serif; font-size:12px;
+  background:var(--bg); outline:none; transition:border-color .2s;
+}
+.foto-fields input:focus { border-color:var(--teal); background:#fff; }
+
+/* ══════════════════════════════════════
+   CONCLUSÃO / EXPORT
+══════════════════════════════════════ */
+.risk-row { display:flex; gap:7px; flex-wrap:wrap; margin-top:8px; }
+.risk-opt {
+  padding:7px 14px; border-radius:20px; border:2px solid var(--border);
+  font-size:11px; font-weight:700; cursor:pointer; transition:all .12s;
+  background:var(--bg); color:var(--text); font-family:'Sora',sans-serif;
+}
+
+.export-box { background:linear-gradient(135deg,var(--teal-dk),var(--teal)); border-radius:var(--r); padding:18px; color:#fff; margin-bottom:14px; }
+.export-box h3 { font-size:14px; font-weight:700; margin-bottom:4px; }
+.export-box p  { font-size:11px; opacity:.75; margin-bottom:14px; }
+.export-note { background:rgba(255,255,255,.12); border-radius:8px; padding:9px 12px; font-size:11px; line-height:1.6; margin-bottom:13px; border:1px solid rgba(255,255,255,.15); }
+.btn-gen { width:100%; padding:13px; border-radius:9px; border:none; background:var(--amber); color:#fff; font-family:'Sora',sans-serif; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:7px; box-shadow:0 4px 16px rgba(232,151,10,.4); transition:all .15s; }
+.btn-gen:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 6px 22px rgba(232,151,10,.5); }
+.btn-gen:disabled { opacity:.55; cursor:not-allowed; transform:none; }
+.btn-sec { width:100%; margin-top:9px; padding:10px; border-radius:9px; border:1.5px solid rgba(255,255,255,.25); background:transparent; color:rgba(255,255,255,.8); font-family:'Sora',sans-serif; font-size:12px; font-weight:600; cursor:pointer; transition:all .15s; }
+.btn-sec:hover { background:rgba(255,255,255,.1); }
+
+/* ══════════════════════════════════════
+   BOTTOM FIXED
+══════════════════════════════════════ */
+.bottom-fixed { position:fixed; bottom:0; left:0; right:0; z-index:40; background:var(--card); border-top:1px solid var(--border); padding:9px 15px; box-shadow:0 -4px 18px rgba(0,0,0,.07); }
+.bottom-inner { max-width:860px; margin:0 auto; display:flex; gap:9px; }
+.btn-save { flex:1; padding:11px; border-radius:8px; border:1.5px solid var(--border); background:var(--bg); color:var(--text); font-family:'Sora',sans-serif; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px; transition:all .15s; }
+.btn-save:hover { border-color:var(--teal); color:var(--teal); }
+.btn-pdf { flex:2; padding:11px; border-radius:8px; border:none; background:var(--teal); color:#fff; font-family:'Sora',sans-serif; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px; transition:all .15s; }
+.btn-pdf:hover { background:var(--teal-dk); }
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+.toast { position:fixed; bottom:75px; left:50%; transform:translateX(-50%) translateY(16px); background:var(--teal-dk); color:#fff; padding:10px 18px; border-radius:30px; font-size:12px; font-weight:600; z-index:200; opacity:0; pointer-events:none; transition:all .3s; white-space:nowrap; max-width:90vw; text-overflow:ellipsis; overflow:hidden; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ══════════════════════════════════════
+   FAB
+══════════════════════════════════════ */
+.fab { position:fixed; bottom:22px; right:18px; z-index:60; width:54px; height:54px; border-radius:50%; background:var(--amber); color:#fff; border:none; font-size:24px; cursor:pointer; box-shadow:0 4px 18px rgba(232,151,10,.45); display:flex; align-items:center; justify-content:center; transition:all .15s; }
+.fab:hover { transform:scale(1.08); }
+.fab-lbl { position:fixed; bottom:35px; right:80px; z-index:60; background:var(--text); color:#fff; font-size:11px; font-weight:600; padding:5px 11px; border-radius:20px; pointer-events:none; white-space:nowrap; }
+
+input[type=file] { display:none; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     VIEW: HOME / HISTÓRICO
+══════════════════════════════════════ -->
+<div id="view-home" class="view active">
+  <div class="top-bar">
+    <div class="top-bar-inner">
+      <div>
+        <h1>🏥 Check List Ergonômico</h1>
+        <p>Grupo Villas Boas · SST / NR-17</p>
+      </div>
+    </div>
+  </div>
+  <div class="page-wrap">
+    <div class="home-nav">
+      <div class="nav-card primary" onclick="novaInspecao()">
+        <div class="nc-icon">📋</div>
+        <h3>Nova Inspeção</h3>
+        <p>Iniciar nova avaliação ergonômica</p>
+      </div>
+      <div class="nav-card" onclick="showView('view-cadastro')">
+        <div class="nc-icon">🗂️</div>
+        <h3>Cadastros</h3>
+        <p>Setores, funcionários e funções</p>
+      </div>
+      <div class="nav-card" onclick="showView('view-matriz')">
+        <div class="nc-icon">📊</div>
+        <h3>Painel de Riscos</h3>
+        <p>Matriz 5×5 por setor</p>
+      </div>
+    </div>
+
+    <div class="sect-title" id="histCount">Inspeções realizadas</div>
+    <div id="histBody"></div>
+  </div>
+  <div class="fab-lbl">Nova Inspeção</div>
+  <button class="fab" onclick="novaInspecao()">＋</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     VIEW: CADASTRO
+══════════════════════════════════════ -->
+<div id="view-cadastro" class="view">
+  <div class="top-bar">
+    <div class="top-bar-inner">
+      <button class="btn-back" onclick="showView('view-home')">←</button>
+      <div><h1>Cadastros</h1><p>Setores, Funcionários e Funções</p></div>
+    </div>
+  </div>
+  <div class="page-wrap">
+    <div class="cad-tabs">
+      <button class="cad-tab active" onclick="cadTab('setores',this)">🏢 Setores</button>
+      <button class="cad-tab" onclick="cadTab('funcionarios',this)">👤 Funcionários</button>
+      <button class="cad-tab" onclick="cadTab('funcoes',this)">🔧 Funções</button>
+    </div>
+
+    <!-- SETORES -->
+    <div class="cad-panel active" id="panel-setores">
+      <div class="cad-add-row">
+        <input class="cad-input" id="in-setor" placeholder="Nome do setor (ex: Recepção, Farmácia...)" onkeydown="if(event.key==='Enter')addCad('setores')">
+        <button class="cad-add-btn" onclick="addCad('setores')">+ Adicionar</button>
+      </div>
+      <div class="cad-list" id="list-setores"></div>
+    </div>
+
+    <!-- FUNCIONÁRIOS -->
+    <div class="cad-panel" id="panel-funcionarios">
+      <div class="cad-row2">
+        <input class="cad-input" id="in-func-nome" placeholder="Nome do funcionário">
+        <select class="cad-sel" id="in-func-setor"><option value="">Setor...</option></select>
+        <input class="cad-input" id="in-func-cargo" placeholder="Cargo/Função">
+      </div>
+      <div style="margin-bottom:12px;">
+        <button class="cad-add-btn" style="width:100%" onclick="addFuncionario()">+ Adicionar Funcionário</button>
+      </div>
+      <div class="cad-list" id="list-funcionarios"></div>
+    </div>
+
+    <!-- FUNÇÕES -->
+    <div class="cad-panel" id="panel-funcoes">
+      <div class="cad-add-row">
+        <input class="cad-input" id="in-funcao" placeholder="Nome da função (ex: Técnico de Enfermagem...)" onkeydown="if(event.key==='Enter')addCad('funcoes')">
+        <button class="cad-add-btn" onclick="addCad('funcoes')">+ Adicionar</button>
+      </div>
+      <div class="cad-list" id="list-funcoes"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     VIEW: PAINEL DE RISCOS
+══════════════════════════════════════ -->
+<div id="view-matriz" class="view">
+  <div class="top-bar">
+    <div class="top-bar-inner">
+      <button class="btn-back" onclick="showView('view-home')">←</button>
+      <div><h1>Painel de Riscos</h1><p>Matriz 5×5 AIHA por Setor</p></div>
+    </div>
+  </div>
+  <div class="page-wrap" id="painelMatriz"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     VIEW: FORMULÁRIO
+══════════════════════════════════════ -->
+<div id="view-form" class="view">
+  <div class="top-bar">
+    <div class="top-bar-inner">
+      <button class="btn-back" onclick="voltarHome()">←</button>
+      <div><h1>Check List Ergonômico</h1><p>NR-17 · Avaliação de Posto de Trabalho</p></div>
+      <div class="top-bar-actions">
+        <button class="tb-btn" onclick="salvarRascunho()">💾 Salvar</button>
+        <button class="tb-btn amber" onclick="gerarPDF()">⬇️ PDF</button>
+      </div>
+    </div>
+    <div style="max-width:860px;margin:0 auto"><div class="prog-wrap"><div class="prog-bar" id="progBar"></div></div></div>
+  </div>
+
+  <div class="page-wrap">
+
+    <!-- RESUMO -->
+    <div class="summary-row">
+      <div class="s-chip"><div class="s-dot" style="background:var(--ok)"></div><span id="cnt-ok">0 Adequado</span></div>
+      <div class="s-chip"><div class="s-dot" style="background:var(--bad)"></div><span id="cnt-bad">0 Inadequado</span></div>
+      <div class="s-chip"><div class="s-dot" style="background:var(--na)"></div><span id="cnt-na">0 N/A</span></div>
+      <div class="s-chip" style="margin-left:auto"><div class="s-dot" style="background:var(--border)"></div><span id="cnt-pend">12 Pendentes</span></div>
+    </div>
+
+    <!-- 1. IDENTIFICAÇÃO -->
+    <div class="sc">
+      <div class="sc-head"><div class="sc-num">1</div><h2>Identificação</h2></div>
+      <div class="sc-body">
+        <div class="fg">
+          <div class="fl">
+            <label>Nome do Colaborador *</label>
+            <div class="ac-wrap">
+              <input id="f-nome" type="text" placeholder="Digite para buscar ou escreva..." autocomplete="off" oninput="acNome(this.value)" onfocus="acNome(this.value)">
+              <div class="ac-dropdown" id="ac-nome"></div>
+            </div>
+          </div>
+          <div class="fl">
+            <label>Setor *</label>
+            <div class="ac-wrap">
+              <input id="f-setor" type="text" placeholder="Digite ou selecione..." autocomplete="off" oninput="acSetor(this.value)" onfocus="acSetor(this.value)">
+              <div class="ac-dropdown" id="ac-setor"></div>
+            </div>
+          </div>
+          <div class="fl">
+            <label>Função *</label>
+            <div class="ac-wrap">
+              <input id="f-funcao" type="text" placeholder="Digite ou selecione..." autocomplete="off" oninput="acFuncao(this.value)" onfocus="acFuncao(this.value)">
+              <div class="ac-dropdown" id="ac-funcao"></div>
+            </div>
+          </div>
+          <div class="fl">
+            <label>Avaliador *</label>
+            <input id="f-avaliador" type="text" placeholder="Seu nome">
+          </div>
+          <div class="fl">
+            <label>Local / Posto</label>
+            <input id="f-local" type="text" placeholder="Ex: Balcão 2, Sala 3...">
+          </div>
+          <div class="fl">
+            <label>Data</label>
+            <input id="f-data" type="date">
+          </div>
+          <div class="fl ff">
+            <label>Descrição da Atividade Real</label>
+            <textarea id="f-desc" placeholder="Descreva brevemente as atividades realizadas no posto avaliado..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. CHECKLIST + MATRIZ inline -->
+    <div class="sc">
+      <div class="sc-head"><div class="sc-num">2</div><h2>Avaliação Ergonômica dos Itens</h2></div>
+      <div class="sc-body" id="checkBody"></div>
+    </div>
+
+    <!-- MATRIZ PREVIEW -->
+    <div class="matrix-box" id="matrixPreview">
+      <div class="matrix-head">
+        <h2>📊 Matriz de Risco 5×5 (AIHA)</h2>
+        <span>Calculado automaticamente</span>
+      </div>
+      <div class="matrix-body" id="matrixBody"></div>
+    </div>
+
+    <!-- 3. FOTOS -->
+    <div class="sc">
+      <div class="sc-head"><div class="sc-num">3</div><h2>Registro Fotográfico</h2></div>
+      <div class="sc-body">
+        <p style="font-size:11px;color:var(--muted);margin-bottom:11px;">Toque no botão abaixo para capturar com a câmera ou selecionar da galeria. Cada foto tem um campo para <strong>título</strong> e <strong>descrição detalhada</strong> do posto.</p>
+        <button class="foto-add-btn" onclick="document.getElementById('fileInput').click()">
+          📷 &nbsp; Adicionar Foto do Posto de Trabalho
+        </button>
+        <input type="file" id="fileInput" accept="image/*" multiple>
+        <div id="fotoList"></div>
+      </div>
+    </div>
+
+    <!-- 4. CONCLUSÃO -->
+    <div class="sc">
+      <div class="sc-head"><div class="sc-num">4</div><h2>Parecer Ergonômico</h2></div>
+      <div class="sc-body">
+        <div class="fl" style="margin-bottom:13px;">
+          <label>Classificação do Risco Ergonômico (confirmação)</label>
+          <div class="risk-row" id="riskRow">
+            <button class="risk-opt" data-r="Aceitável"  onclick="setRisco(this)">✅ Aceitável</button>
+            <button class="risk-opt" data-r="Baixo"      onclick="setRisco(this)">🟢 Baixo</button>
+            <button class="risk-opt" data-r="Médio"      onclick="setRisco(this)">🟡 Médio</button>
+            <button class="risk-opt" data-r="Alto"       onclick="setRisco(this)">🟠 Alto</button>
+            <button class="risk-opt" data-r="Muito Alto" onclick="setRisco(this)">🔴 Muito Alto</button>
+          </div>
+        </div>
+        <div class="fl">
+          <label>Conclusões e Recomendações</label>
+          <textarea id="f-parecer" style="min-height:85px" placeholder="Descreva o parecer, principais não conformidades e recomendações de melhoria..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPORT -->
+    <div class="export-box">
+      <h3>📄 Gerar Relatório PDF</h3>
+      <p>O PDF incluirá a Matriz 5×5, fotos com descrições e o parecer ergonômico.</p>
+      <div class="export-note">⬇️ <strong>Onde vai o arquivo?</strong> Direto na pasta <strong>Downloads</strong> do dispositivo. No celular, veja nas notificações ou em Arquivos → Downloads.</div>
+      <button class="btn-gen" id="btnPDF" onclick="gerarPDF()">⬇️ Baixar PDF da Inspeção</button>
+      <button class="btn-sec" onclick="confirmLimpar()">🗑 Limpar formulário</button>
+    </div>
+
+  </div>
+
+  <div class="bottom-fixed">
+    <div class="bottom-inner">
+      <button class="btn-save" onclick="salvarRascunho()">💾 Rascunho</button>
+      <button class="btn-pdf" onclick="gerarPDF()">⬇️ Baixar PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════
+// DADOS GLOBAIS
+// ════════════════════════════════════════
+const ITEMS = [
+  { id:1,  title:"Cadeira",                    desc:"Regulagem de altura, encosto ajustável, apoio lombar",       probBase:3, sevBase:2 },
+  { id:2,  title:"Mesa / Estação de Trabalho", desc:"Altura compatível, espaço livre para pernas",               probBase:3, sevBase:2 },
+  { id:3,  title:"Monitor",                    desc:"Altura na linha dos olhos, distância adequada (50–70 cm)",  probBase:3, sevBase:2 },
+  { id:4,  title:"Teclado e Mouse",            desc:"Posicionamento correto, apoio para punhos",                 probBase:4, sevBase:2 },
+  { id:5,  title:"Iluminação",                 desc:"Natural ou artificial, sem reflexos ou ofuscamento",        probBase:2, sevBase:2 },
+  { id:6,  title:"Postura Sentada",            desc:"Pés apoiados, joelhos a 90°, coluna ereta",                probBase:4, sevBase:3 },
+  { id:7,  title:"Postura em Pé",              desc:"Alternância de apoio, uso de tapete antifadiga",           probBase:3, sevBase:3 },
+  { id:8,  title:"Movimentos Repetitivos",     desc:"Frequência de repetição, pausas adequadas",                probBase:4, sevBase:3 },
+  { id:9,  title:"Levantamento de Cargas",     desc:"Técnica utilizada, peso compatível com limite legal",      probBase:3, sevBase:4 },
+  { id:10, title:"Organização do Posto",       desc:"Alcance dos materiais, ausência de obstáculos",           probBase:2, sevBase:2 },
+  { id:11, title:"Ambiente Térmico",           desc:"Temperatura, ventilação, nível de ruído",                  probBase:2, sevBase:2 },
+  { id:12, title:"Pausas e Descanso",          desc:"Intervalos regulares, micro-pausas programadas",          probBase:3, sevBase:2 },
+];
+
+// Severidade por item (ajustável pelo avaliador quando "Inadequado")
+const SEV_OPTS = [1,2,3,4,5];
+const SEV_LABELS = ['1 – Insignificante','2 – Marginal','3 – Moderada','4 – Crítica','5 – Catastrófica'];
+
+// Matriz 5×5: prob × sev → nível
+function calcNivel(p, s) {
+  const score = p * s;
+  if(score <= 2)  return {nivel:1, label:'Insignificante', cor:'#27AE60', txt:'#fff'};
+  if(score <= 6)  return {nivel:2, label:'Baixo',          cor:'#8BC34A', txt:'#fff'};
+  if(score <= 12) return {nivel:3, label:'Médio',          cor:'#F9C74F', txt:'#333'};
+  if(score <= 16) return {nivel:4, label:'Alto',           cor:'#F4742B', txt:'#fff'};
+  return             {nivel:5, label:'Muito Alto',         cor:'#D32F2F', txt:'#fff'};
+}
+
+function calcMatrizGlobal(respostas) {
+  // Pega o maior score entre os itens inadequados
+  let maxScore = 0, maxP = 0, maxS = 0;
+  ITEMS.forEach(item => {
+    const r = respostas[item.id];
+    if(!r || r.status !== 'bad') return;
+    const sev = r.sev || item.sevBase;
+    const prob = item.probBase;
+    const score = prob * sev;
+    if(score > maxScore) { maxScore = score; maxP = prob; maxS = sev; }
+  });
+  if(maxScore === 0) return null;
+  return { p: maxP, s: maxS, score: maxScore, ...calcNivel(maxP, maxS) };
+}
+
+// Estado
+let state = newState();
+function newState() {
+  return { respostas:{}, fotos:[], risco:'' };
+}
+
+// DB local
+function getDB() {
+  const def = { setores:[], funcionarios:[], funcoes:[], historico:[] };
+  try { return { ...def, ...JSON.parse(localStorage.getItem('cle_db')||'{}') }; } catch(e) { return def; }
+}
+function saveDB(db) { localStorage.setItem('cle_db', JSON.stringify(db)); }
+
+// ════════════════════════════════════════
+// VIEWS
+// ════════════════════════════════════════
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='view-home')    renderHistorico();
+  if(id==='view-cadastro') renderCadastros();
+  if(id==='view-matriz')   renderPainelMatriz();
+}
+
+// ════════════════════════════════════════
+// AUTOCOMPLETE
+// ════════════════════════════════════════
+// ── AUTOCOMPLETE — versão robusta (funciona em mobile/touch) ──
+let _acBlurLock = false; // impede fechamento durante seleção
+
+function acNome(val) {
+  const db = getDB();
+  const q = val.toLowerCase().trim();
+  const items = db.funcionarios.filter(f => !q || f.nome.toLowerCase().includes(q));
+  showAC('ac-nome', items.slice(0,8).map(f => ({
+    primary: f.nome,
+    secondary: `${f.setor||''}${f.cargo ? ' · '+f.cargo : ''}`,
+    onSelect: () => {
+      document.getElementById('f-nome').value   = f.nome;
+      document.getElementById('f-setor').value  = f.setor || '';
+      document.getElementById('f-funcao').value = f.cargo || '';
+      closeAllAC();
+    }
+  })));
+}
+
+function acSetor(val) {
+  const db = getDB();
+  const q = val.toLowerCase().trim();
+  const items = db.setores.filter(s => !q || s.toLowerCase().includes(q));
+  showAC('ac-setor', items.slice(0,8).map(s => ({
+    primary: s, secondary: '',
+    onSelect: () => { document.getElementById('f-setor').value = s; closeAllAC(); }
+  })));
+}
+
+function acFuncao(val) {
+  const db = getDB();
+  const q = val.toLowerCase().trim();
+  const items = db.funcoes.filter(f => !q || f.toLowerCase().includes(q));
+  showAC('ac-funcao', items.slice(0,8).map(f => ({
+    primary: f, secondary: '',
+    onSelect: () => { document.getElementById('f-funcao').value = f; closeAllAC(); }
+  })));
+}
+
+function showAC(id, items) {
+  // Fechar todos os outros primeiro
+  ['ac-nome','ac-setor','ac-funcao'].forEach(other => {
+    if(other !== id) document.getElementById(other).classList.remove('show');
+  });
+  const el = document.getElementById(id);
+  if(!items.length) { el.classList.remove('show'); return; }
+  el.innerHTML = items.map((it, i) => `
+    <div class="ac-item" data-idx="${i}" id="${id}-item-${i}">
+      ${it.primary}
+      ${it.secondary ? `<strong>${it.secondary}</strong>` : ''}
+    </div>`).join('');
+  // Bind de eventos — usa tanto click quanto touchend para mobile
+  items.forEach((it, i) => {
+    const itemEl = document.getElementById(`${id}-item-${i}`);
+    const handler = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      _acBlurLock = true;
+      it.onSelect();
+      setTimeout(() => { _acBlurLock = false; }, 300);
+    };
+    itemEl.addEventListener('mousedown', handler);
+    itemEl.addEventListener('touchstart', handler, { passive: false });
+  });
+  el.classList.add('show');
+}
+
+function closeAllAC() {
+  ['ac-nome','ac-setor','ac-funcao'].forEach(id => {
+    document.getElementById(id).classList.remove('show');
+  });
+}
+
+// Fechar ao clicar fora — com proteção contra fechamento durante seleção
+document.addEventListener('click', (e) => {
+  if(_acBlurLock) return;
+  if(!e.target.closest('.ac-wrap')) closeAllAC();
+});
+document.addEventListener('touchend', (e) => {
+  if(_acBlurLock) return;
+  if(!e.target.closest('.ac-wrap') && !e.target.closest('.ac-item')) closeAllAC();
+});
+
+// ════════════════════════════════════════
+// CADASTROS
+// ════════════════════════════════════════
+function cadTab(tab, btn) {
+  document.querySelectorAll('.cad-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.cad-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+}
+
+function addCad(tipo) {
+  const db = getDB();
+  const inputId = tipo === 'setores' ? 'in-setor' : 'in-funcao';
+  const val = document.getElementById(inputId).value.trim();
+  if(!val) return showToast('Digite um valor para adicionar');
+  if(tipo === 'setores' && db.setores.includes(val)) return showToast('Setor já cadastrado');
+  if(tipo === 'funcoes' && db.funcoes.includes(val)) return showToast('Função já cadastrada');
+  db[tipo].push(val);
+  saveDB(db);
+  document.getElementById(inputId).value = '';
+  renderCadastros();
+  showToast(`✅ ${tipo === 'setores' ? 'Setor' : 'Função'} adicionado`);
+}
+
+function addFuncionario() {
+  const db = getDB();
+  const nome  = document.getElementById('in-func-nome').value.trim();
+  const setor = document.getElementById('in-func-setor').value;
+  const cargo = document.getElementById('in-func-cargo').value.trim();
+  if(!nome) return showToast('Digite o nome do funcionário');
+  db.funcionarios.push({ nome, setor, cargo });
+  saveDB(db);
+  document.getElementById('in-func-nome').value  = '';
+  document.getElementById('in-func-cargo').value = '';
+  renderCadastros();
+  showToast('✅ Funcionário adicionado');
+}
+
+function delCad(tipo, idx) {
+  const db = getDB();
+  if(tipo === 'funcionarios') db.funcionarios.splice(idx,1);
+  else if(tipo === 'setores') db.setores.splice(idx,1);
+  else db.funcoes.splice(idx,1);
+  saveDB(db);
+  renderCadastros();
+}
+
+function renderCadastros() {
+  const db = getDB();
+
+  // Setor select no form de funcionário
+  const sel = document.getElementById('in-func-setor');
+  sel.innerHTML = '<option value="">Setor...</option>' + db.setores.map(s=>`<option value="${s}">${s}</option>`).join('');
+
+  // Listas
+  document.getElementById('list-setores').innerHTML = db.setores.length
+    ? db.setores.map((s,i)=>`<div class="cad-item"><div class="cad-item-icon">🏢</div><div class="cad-item-text">${s}</div><button class="cad-del" onclick="delCad('setores',${i})">✕</button></div>`).join('')
+    : '<p style="color:var(--muted);font-size:12px;padding:8px 0">Nenhum setor cadastrado ainda.</p>';
+
+  document.getElementById('list-funcionarios').innerHTML = db.funcionarios.length
+    ? db.funcionarios.map((f,i)=>`<div class="cad-item"><div class="cad-item-icon">👤</div><div class="cad-item-text">${f.nome}<div class="cad-item-sub">${f.setor||'—'} · ${f.cargo||'—'}</div></div><button class="cad-del" onclick="delCad('funcionarios',${i})">✕</button></div>`).join('')
+    : '<p style="color:var(--muted);font-size:12px;padding:8px 0">Nenhum funcionário cadastrado ainda.</p>';
+
+  document.getElementById('list-funcoes').innerHTML = db.funcoes.length
+    ? db.funcoes.map((f,i)=>`<div class="cad-item"><div class="cad-item-icon">🔧</div><div class="cad-item-text">${f}</div><button class="cad-del" onclick="delCad('funcoes',${i})">✕</button></div>`).join('')
+    : '<p style="color:var(--muted);font-size:12px;padding:8px 0">Nenhuma função cadastrada ainda.</p>';
+}
+
+// ════════════════════════════════════════
+// PAINEL DE RISCOS POR SETOR
+// ════════════════════════════════════════
+function renderPainelMatriz() {
+  const db = getDB();
+  const wrap = document.getElementById('painelMatriz');
+  if(!db.historico.length) {
+    wrap.innerHTML = '<div class="hist-empty"><div class="big">📊</div><strong>Nenhuma inspeção realizada</strong><br>Realize inspeções para ver o painel de riscos por setor.</div>';
+    return;
+  }
+
+  // Agrupar por setor
+  const setores = {};
+  db.historico.forEach(ins => {
+    const s = ins.setor || 'Sem setor';
+    if(!setores[s]) setores[s] = [];
+    setores[s].push(ins);
+  });
+
+  let html = '';
+  Object.entries(setores).forEach(([setor, insps]) => {
+    // Pior risco do setor
+    let piorScore = 0, piorP = 0, piorS = 0;
+    insps.forEach(ins => {
+      if(ins.matrizScore > piorScore) { piorScore = ins.matrizScore; piorP = ins.matrizP; piorS = ins.matrizS; }
+    });
+    const nv = piorScore > 0 ? calcNivel(piorP, piorS) : null;
+
+    html += `<div class="matrix-box" style="margin-bottom:16px">
+      <div class="matrix-head">
+        <h2>🏢 ${setor}</h2>
+        <span>${insps.length} inspeção${insps.length!==1?'ões':''}</span>
+      </div>
+      <div class="matrix-body">
+        ${nv ? `<div class="matrix-result" style="background:${nv.cor}22;border-color:${nv.cor}">
+          <div class="matrix-score" style="background:${nv.cor};color:${nv.txt}">${piorScore}</div>
+          <div class="matrix-desc">
+            <h3 style="color:${nv.cor}">Risco ${nv.label}</h3>
+            <p>Pior registro: Probabilidade ${piorP} × Severidade ${piorS} = ${piorScore}</p>
+          </div>
+        </div>` : '<p style="font-size:12px;color:var(--muted)">Sem itens inadequados registrados.</p>'}
+        <div style="margin-top:10px;font-size:11px;color:var(--muted)">Últimas inspeções:</div>
+        ${insps.slice(0,3).map(i=>`<div style="font-size:11px;padding:4px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between"><span>${i.nome} · ${i.data_?new Date(i.data_+'T12:00').toLocaleDateString('pt-BR'):'—'}</span>${i.risco?`<span style="font-weight:700;color:var(--teal)">${i.risco}</span>`:''}</div>`).join('')}
+      </div>
+    </div>`;
+  });
+
+  wrap.innerHTML = html;
+}
+
+// ════════════════════════════════════════
+// FORMULÁRIO – CHECKLIST
+// ════════════════════════════════════════
+function novaInspecao() {
+  state = newState();
+  buildChecklist();
+  ['f-nome','f-setor','f-funcao','f-avaliador','f-local','f-desc','f-parecer'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  document.getElementById('f-data').value = new Date().toISOString().split('T')[0];
+  document.getElementById('fotoList').innerHTML = '';
+  document.querySelectorAll('.risk-opt').forEach(b => b.className = 'risk-opt');
+  updateSummary();
+  renderMatrizPreview();
+  showView('view-form');
+}
+
+function voltarHome() { showView('view-home'); renderHistorico(); }
+
+function buildChecklist() {
+  const body = document.getElementById('checkBody');
+  body.innerHTML = '';
+  ITEMS.forEach(item => {
+    const d = document.createElement('div');
+    d.className = 'ci'; d.id = `ci-${item.id}`;
+    d.innerHTML = `
+      <div class="ci-top">
+        <div class="ci-num">${String(item.id).padStart(2,'0')}</div>
+        <div class="ci-info"><h3>${item.title}</h3><p>${item.desc}</p></div>
+        <div class="ci-sev">
+          <select id="sev-${item.id}" class="ci-sev-sel" onchange="setSev(${item.id},parseInt(this.value))" title="Severidade do risco">
+            ${SEV_OPTS.map(n=>`<option value="${n}"${n===item.sevBase?' selected':''}>${n} – ${['Insig.','Marginal','Moderada','Crítica','Catastr.'][n-1]}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="radio-row">
+        <label class="rb" id="rb-ok-${item.id}"  onclick="pickStatus(${item.id},'ok',this)">✅ Adequado</label>
+        <label class="rb" id="rb-bad-${item.id}" onclick="pickStatus(${item.id},'bad',this)">❌ Inadequado</label>
+        <label class="rb" id="rb-na-${item.id}"  onclick="pickStatus(${item.id},'na',this)">— N/A</label>
+      </div>
+      <div class="obs-wrap" id="obs-${item.id}">
+        <div class="obs-lbl">Observações</div>
+        <textarea placeholder="Detalhe aqui..." oninput="setObs(${item.id},this.value)"></textarea>
+      </div>
+    `;
+    body.appendChild(d);
+  });
+}
+
+function pickStatus(id, status, lbl) {
+  state.respostas[id] = state.respostas[id] || { status:'', obs:'', sev: ITEMS.find(i=>i.id===id).sevBase };
+  state.respostas[id].status = status;
+  const ci = document.getElementById(`ci-${id}`);
+  ci.className = `ci s-${status}`;
+  ['ok','bad','na'].forEach(s => {
+    document.getElementById(`rb-${s}-${id}`).className = `rb${s===status?' sel-'+s:''}`;
+  });
+  // Mostrar select de severidade apenas se inadequado
+  const sevEl = document.getElementById(`sev-${id}`);
+  sevEl.style.display = status === 'bad' ? 'block' : 'none';
+  document.getElementById(`obs-${id}`).className = 'obs-wrap show';
+  updateSummary();
+  renderMatrizPreview();
+}
+
+function setSev(id, val) {
+  state.respostas[id] = state.respostas[id] || { status:'bad', obs:'', sev: val };
+  state.respostas[id].sev = val;
+  renderMatrizPreview();
+}
+
+function setObs(id, val) {
+  state.respostas[id] = state.respostas[id] || { status:'', obs:'', sev:3 };
+  state.respostas[id].obs = val;
+}
+
+function updateSummary() {
+  let ok=0,bad=0,na=0;
+  Object.values(state.respostas).forEach(r => {
+    if(r.status==='ok') ok++; else if(r.status==='bad') bad++; else if(r.status==='na') na++;
+  });
+  const pend = ITEMS.length - ok - bad - na;
+  document.getElementById('cnt-ok').textContent   = `${ok} Adequado${ok!==1?'s':''}`;
+  document.getElementById('cnt-bad').textContent  = `${bad} Inadequado${bad!==1?'s':''}`;
+  document.getElementById('cnt-na').textContent   = `${na} N/A`;
+  document.getElementById('cnt-pend').textContent = `${pend} Pendente${pend!==1?'s':''}`;
+  document.getElementById('progBar').style.width  = ((ok+bad+na)/ITEMS.length*100)+'%';
+}
+
+// ════════════════════════════════════════
+// MATRIZ 5×5 preview
+// ════════════════════════════════════════
+const PROB_LABELS = ['','Raro','Improvável','Possível','Provável','Frequente'];
+const SEV_SHORT   = ['','Insig.','Marginal','Moderada','Crítica','Catastr.'];
+
+function renderMatrizPreview() {
+  const m = calcMatrizGlobal(state.respostas);
+  const body = document.getElementById('matrixBody');
+
+  // Itens inadequados
+  const bads = ITEMS.filter(item => state.respostas[item.id]?.status === 'bad');
+
+  // Result banner
+  let bannerHTML = '';
+  if(!bads.length) {
+    bannerHTML = `<div style="padding:10px;text-align:center;font-size:12px;color:var(--muted)">Nenhum item inadequado registrado ainda.</div>`;
+  } else {
+    const col = m.cor, txt = m.txt;
+    bannerHTML = `
+      <div class="matrix-result" style="background:${col}22;border-color:${col}">
+        <div class="matrix-score" style="background:${col};color:${txt}">${m.score}</div>
+        <div class="matrix-desc">
+          <h3 style="color:${col}">Risco ${m.label}</h3>
+          <p>Probabilidade ${m.p} (${PROB_LABELS[m.p]}) × Severidade ${m.s} (${SEV_SHORT[m.s]}) = ${m.score}<br>
+          Baseado no item de maior score entre os ${bads.length} inadequado${bads.length!==1?'s':''}.</p>
+        </div>
+      </div>`;
+  }
+
+  // Grade 5×5
+  let gridHTML = `<div class="matrix-grid" style="margin-bottom:12px;">
+    <div class="mg-corner"></div>
+    ${[1,2,3,4,5].map(s=>`<div class="mg-header">Sev ${s}</div>`).join('')}
+  `;
+  for(let p=5; p>=1; p--) {
+    gridHTML += `<div class="mg-row-label">P${p}<br>${PROB_LABELS[p]}</div>`;
+    for(let s=1; s<=5; s++) {
+      const nv = calcNivel(p,s);
+      const score = p*s;
+      const isCurrent = m && m.p===p && m.s===s;
+      gridHTML += `<div class="mg-cell${isCurrent?' current':''}" style="background:${nv.cor};color:${nv.txt}" title="P${p}×S${s}=${score} (${nv.label})">${score}</div>`;
+    }
+  }
+  gridHTML += '</div>';
+
+  // Lista dos inadequados
+  let listHTML = '';
+  if(bads.length) {
+    listHTML = '<div class="items-bad-list">';
+    bads.forEach(item => {
+      const r = state.respostas[item.id];
+      const sev = r.sev || item.sevBase;
+      const sc = item.probBase * sev;
+      const nv = calcNivel(item.probBase, sev);
+      listHTML += `
+        <div class="bad-item-row">
+          <span class="bad-num">${String(item.id).padStart(2,'0')}</span>
+          <span style="flex:1;font-weight:600">${item.title}</span>
+          <span class="bad-sev" style="background:${nv.cor}22;color:${nv.cor}">P${item.probBase}×S${sev}=${sc}</span>
+          <span class="bad-sev" style="background:${nv.cor};color:${nv.txt}">${nv.label}</span>
+        </div>`;
+    });
+    listHTML += '</div>';
+  }
+
+  body.innerHTML = bannerHTML + gridHTML + listHTML;
+}
+
+// ════════════════════════════════════════
+// FOTOS
+// ════════════════════════════════════════
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  Array.from(e.target.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      state.fotos.push({ dataUrl:ev.target.result, titulo:'', desc:'', name:file.name });
+      renderFotos();
+    };
+    reader.readAsDataURL(file);
+  });
+  this.value = '';
+});
+
+function renderFotos() {
+  const list = document.getElementById('fotoList');
+  list.innerHTML = '';
+  state.fotos.forEach((f,i) => {
+    const el = document.createElement('div');
+    el.className = 'foto-item';
+    el.innerHTML = `
+      <div class="foto-item-head">
+        <span class="fn">📷 Foto ${i+1}</span>
+        <button class="foto-del" onclick="removeFoto(${i})">✕ Remover</button>
+      </div>
+      <div class="foto-content">
+        <img class="foto-thumb" src="${f.dataUrl}" alt="Foto ${i+1}">
+        <div class="foto-fields">
+          <label>Título da Foto</label>
+          <input type="text" value="${f.titulo||''}" placeholder="Ex: Vista frontal do posto, Monitor..."
+            oninput="state.fotos[${i}].titulo=this.value">
+          <label>Descrição Detalhada do Posto</label>
+          <textarea placeholder="Descreva o que a foto mostra: postura observada, posição dos equipamentos, condições identificadas, não conformidades visíveis..."
+            oninput="state.fotos[${i}].desc=this.value">${f.desc||''}</textarea>
+        </div>
+      </div>
+    `;
+    list.appendChild(el);
+  });
+}
+
+function removeFoto(idx) {
+  state.fotos.splice(idx,1);
+  renderFotos();
+  showToast('Foto removida');
+}
+
+// ════════════════════════════════════════
+// RISCO
+// ════════════════════════════════════════
+function setRisco(btn) {
+  state.risco = btn.dataset.r;
+  document.querySelectorAll('.risk-opt').forEach(b => {
+    const map = {'Aceitável':'#1B8C50','Baixo':'#2E9E65','Médio':'#D4820A','Alto':'#C44A1A','Muito Alto':'#C93B2A'};
+    b.style.background = b.dataset.r === state.risco ? (map[state.risco]||'') : '';
+    b.style.color       = b.dataset.r === state.risco ? '#fff' : '';
+    b.style.borderColor = b.dataset.r === state.risco ? (map[state.risco]||'') : '';
+  });
+}
+
+// ════════════════════════════════════════
+// COLETA + SALVAR
+// ════════════════════════════════════════
+function collectForm() {
+  return {
+    nome:       document.getElementById('f-nome').value,
+    setor:      document.getElementById('f-setor').value,
+    funcao:     document.getElementById('f-funcao').value,
+    avaliador:  document.getElementById('f-avaliador').value,
+    local:      document.getElementById('f-local').value,
+    data_:      document.getElementById('f-data').value,
+    desc:       document.getElementById('f-desc').value,
+    parecer:    document.getElementById('f-parecer').value,
+    respostas:  state.respostas,
+    fotos:      state.fotos,
+    risco:      state.risco,
+  };
+}
+
+function salvarRascunho() {
+  try {
+    localStorage.setItem('cle_rascunho', JSON.stringify(collectForm()));
+    showToast('💾 Rascunho salvo!');
+  } catch(e) { showToast('⚠️ Fotos pesadas — gere o PDF diretamente'); }
+}
+
+function confirmLimpar() {
+  if(confirm('Limpar todos os campos?')) { novaInspecao(); showToast('🗑 Formulário limpo'); }
+}
+
+// ════════════════════════════════════════
+// HISTÓRICO
+// ════════════════════════════════════════
+function salvarNoHistorico(d, pdfBlob) {
+  const db = getDB();
+  const m = calcMatrizGlobal(d.respostas);
+  const id = Date.now();
+  const reader = new FileReader();
+  reader.onload = ev => {
+    db.historico.unshift({
+      id, nome:d.nome||'Sem nome', setor:d.setor||'—', funcao:d.funcao||'—',
+      avaliador:d.avaliador||'—', data_:d.data_, risco:d.risco||'',
+      ok:  Object.values(d.respostas).filter(r=>r.status==='ok').length,
+      bad: Object.values(d.respostas).filter(r=>r.status==='bad').length,
+      na:  Object.values(d.respostas).filter(r=>r.status==='na').length,
+      matrizScore: m?m.score:0, matrizP:m?m.p:0, matrizS:m?m.s:0,
+      matrizLabel: m?m.label:'',
+      pdfB64: ev.target.result,
+      createdAt: new Date().toISOString(),
+    });
+    try { saveDB(db); } catch(e) {
+      db.historico[0].pdfB64=null; db.historico[0].semPDF=true;
+      try { saveDB(db); } catch(e2){}
+    }
+    renderHistorico();
+  };
+  reader.readAsDataURL(pdfBlob);
+}
+
+function renderHistorico() {
+  const db = getDB();
+  const hist = db.historico||[];
+  const body = document.getElementById('histBody');
+  document.getElementById('histCount').textContent = `${hist.length} inspeção${hist.length!==1?'ões':''} registrada${hist.length!==1?'s':''}`;
+
+  if(!hist.length) {
+    body.innerHTML = `<div class="hist-empty"><div class="big">📋</div><strong>Nenhuma inspeção ainda</strong><br>Toque em <strong>Nova Inspeção</strong> para começar.</div>`;
+    return;
+  }
+
+  const RISK_COLORS = {'Aceitável':'#1B8C50','Baixo':'#2E9E65','Médio':'#D4820A','Alto':'#C44A1A','Muito Alto':'#C93B2A'};
+  body.innerHTML = hist.map(ins => {
+    const dataFmt = ins.data_ ? new Date(ins.data_+'T12:00').toLocaleDateString('pt-BR') : '—';
+    const col = RISK_COLORS[ins.risco]||'#6A8480';
+    return `
+    <div class="insp-card">
+      <div class="insp-card-top">
+        <div class="insp-icon">👷</div>
+        <div class="insp-meta">
+          <h3>${ins.nome}</h3>
+          <p>${ins.setor} · ${ins.funcao} · ${dataFmt}</p>
+          <p style="font-size:9px;margin-top:1px;color:var(--muted)">Avaliador: ${ins.avaliador}</p>
+        </div>
+        ${ins.risco?`<span class="risk-badge" style="background:${col}22;color:${col}">${ins.risco}</span>`:''}
+      </div>
+      <div class="insp-stats">
+        <div class="s-chip"><div class="s-dot" style="background:var(--ok)"></div>${ins.ok} adequado${ins.ok!==1?'s':''}</div>
+        <div class="s-chip"><div class="s-dot" style="background:var(--bad)"></div>${ins.bad} inadequado${ins.bad!==1?'s':''}</div>
+        <div class="s-chip"><div class="s-dot" style="background:var(--na)"></div>${ins.na} N/A</div>
+        ${ins.matrizScore?`<div class="s-chip" style="margin-left:auto"><span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:${['','#27AE60','#8BC34A','#D4820A','#C44A1A','#C93B2A'][calcNivel(ins.matrizP,ins.matrizS).nivel]}">Matriz: ${ins.matrizLabel} (${ins.matrizScore})</span></div>`:''}
+      </div>
+      <div class="insp-actions">
+        ${ins.pdfB64&&!ins.semPDF
+          ? `<button class="btn-sm btn-dl" onclick="dlHistPDF('${ins.id}')">⬇️ Baixar PDF</button>`
+          : `<span style="font-size:10px;color:var(--muted);align-self:center">PDF não disponível</span>`}
+        <button class="btn-sm btn-del" onclick="delInspecao('${ins.id}')">🗑 Excluir</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function dlHistPDF(id) {
+  const db = getDB();
+  const ins = (db.historico||[]).find(h=>String(h.id)===String(id));
+  if(!ins||!ins.pdfB64) return showToast('PDF não disponível');
+  const a = document.createElement('a');
+  a.href = ins.pdfB64;
+  a.download = `CheckList_${ins.nome.replace(/\s+/g,'_')}_${ins.data_||'sem-data'}.pdf`;
+  a.click();
+  showToast('⬇️ Download iniciado!');
+}
+
+function delInspecao(id) {
+  if(!confirm('Excluir esta inspeção?')) return;
+  const db = getDB();
+  db.historico = (db.historico||[]).filter(h=>String(h.id)!==String(id));
+  saveDB(db);
+  renderHistorico();
+  showToast('🗑 Excluída');
+}
+
+// ════════════════════════════════════════
+// GERAR PDF
+// ════════════════════════════════════════
+async function gerarPDF() {
+  const btn = document.getElementById('btnPDF');
+  btn.disabled=true; btn.textContent='⏳ Gerando...';
+  try {
+    const d = collectForm();
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+    const W=210, ML=13, MR=13, CW=W-ML-MR;
+    const C = {
+      TEAL:[26,122,110],DK:[15,82,72],LT:[230,244,242],MD:[178,221,216],
+      WHITE:[255,255,255],BG:[240,244,243],TEXT:[24,37,35],MUTED:[106,132,128],
+      OK:[27,140,80],BAD:[201,59,42],NA:[123,135,148],AMBER:[232,151,10],
+    };
+    let y=0;
+    function np(need=20){ if(y+need>284){doc.addPage();y=13;border();} }
+    function border(){ doc.setDrawColor(...C.MD);doc.setLineWidth(0.3);doc.rect(7,7,W-14,283); }
+    function fill(x,yw,w,h,col){ doc.setFillColor(...col);doc.rect(x,yw,w,h,'F'); }
+    function t(s,x,yw,o={}){ doc.text(String(s||''),x,yw,o); }
+    function sh(label,yw){ fill(ML,yw,CW,7,C.TEAL);doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...C.WHITE);t(label,ML+3,yw+5); }
+
+    // CAPA
+    fill(0,0,W,32,C.DK); fill(0,32,W,4,C.AMBER);
+    doc.setTextColor(...C.WHITE);
+    doc.setFont('helvetica','bold'); doc.setFontSize(19); t('GRUPO VILLAS BOAS',ML,14);
+    doc.setFontSize(9.5);doc.setFont('helvetica','normal');
+    t('CHECK LIST ERGONÔMICO — Avaliação de Posto de Trabalho (NR-17)',ML,21);
+    doc.setFontSize(7.5); t('Portaria MTE nº 1.419/2024',ML,27);
+    t(new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'}),W-MR,14,{align:'right'});
+    y=42; border();
+
+    // IDENTIFICAÇÃO
+    sh('1. IDENTIFICAÇÃO',y);y+=8;
+    const hf=CW/2-2;
+    const dataFmt=d.data_?new Date(d.data_+'T12:00').toLocaleDateString('pt-BR'):'—';
+    function idRow(l1,v1,l2,v2){
+      np(12);
+      fill(ML,y,hf,11,C.MD);fill(ML+hf+4,y,hf,11,C.MD);
+      fill(ML,y+5.5,hf,5.5,C.WHITE);fill(ML+hf+4,y+5.5,hf,5.5,C.WHITE);
+      doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(...C.TEAL);
+      t(l1,ML+2,y+5);t(l2,ML+hf+6,y+5);
+      doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...C.TEXT);
+      t(v1||'—',ML+2,y+9.5);t(v2||'—',ML+hf+6,y+9.5);
+      y+=12;
+    }
+    idRow('NOME DO COLABORADOR',d.nome,'SETOR',d.setor);
+    idRow('FUNÇÃO',d.funcao,'AVALIADOR',d.avaliador);
+    idRow('LOCAL / POSTO',d.local,'DATA DA AVALIAÇÃO',dataFmt);
+    np(18);fill(ML,y,CW,6,C.MD);
+    doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(...C.TEAL);
+    t('DESCRIÇÃO DA ATIVIDADE REAL',ML+2,y+4.5);y+=6;
+    fill(ML,y,CW,16,C.WHITE);
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...C.TEXT);
+    doc.text(doc.splitTextToSize(d.desc||'—',CW-4).slice(0,2),ML+2,y+5);y+=18;
+
+    // CHECKLIST TABLE
+    y+=4;np(16);sh('2. AVALIAÇÃO ERGONÔMICA DOS ITENS',y);y+=8;
+    doc.setFont('helvetica','italic');doc.setFontSize(7);doc.setTextColor(...C.MUTED);
+    t('Legenda: ✓ Adequado   ✗ Inadequado   — N/A   (Sev) = Severidade atribuída pelo avaliador',ML,y);y+=5;
+    const N_=8,TIT=CW-8-18-22-20-55,OK_=18,BAD=22,SEV=20,OBS=55;
+    fill(ML,y,N_,7,C.TEAL);fill(ML+N_,y,TIT,7,C.TEAL);fill(ML+N_+TIT,y,OK_,7,C.TEAL);
+    fill(ML+N_+TIT+OK_,y,BAD,7,C.TEAL);fill(ML+N_+TIT+OK_+BAD,y,SEV,7,C.TEAL);
+    fill(ML+N_+TIT+OK_+BAD+SEV,y,OBS,7,C.TEAL);
+    doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(...C.WHITE);
+    t('Nº',ML+1,y+5);t('Item Avaliado',ML+N_+2,y+5);t('Adequado',ML+N_+TIT+1,y+5);
+    t('Inadequado',ML+N_+TIT+OK_+1,y+5);t('Sev.',ML+N_+TIT+OK_+BAD+2,y+5);
+    t('Observações',ML+N_+TIT+OK_+BAD+SEV+2,y+5);y+=7;
+
+    ITEMS.forEach((item,idx)=>{
+      np(13);
+      const r=d.respostas[item.id]||{};
+      const bg=idx%2===0?C.WHITE:C.LT;
+      const rh=13;
+      fill(ML,y,N_,rh,C.TEAL);fill(ML+N_,y,TIT,rh,bg);
+      fill(ML+N_+TIT,y,OK_,rh,r.status==='ok'?C.OK:bg);
+      fill(ML+N_+TIT+OK_,y,BAD,rh,r.status==='bad'?C.BAD:bg);
+      const sev=r.sev||item.sevBase;
+      const scoreCol=r.status==='bad'?calcNivel(item.probBase,sev).cor:'transparent';
+      fill(ML+N_+TIT+OK_+BAD,y,SEV,rh, r.status==='bad'?scoreCol.match(/\d+/g).map(Number):[245,247,246]);
+      fill(ML+N_+TIT+OK_+BAD+SEV,y,OBS,rh,bg);
+      doc.setDrawColor(210,225,222);doc.setLineWidth(0.2);doc.rect(ML,y,CW,rh);
+      doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...C.WHITE);
+      t(String(item.id).padStart(2,'0'),ML+1,y+5);
+      doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...C.TEXT);
+      t(item.title,ML+N_+2,y+5);
+      doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...C.MUTED);
+      t(item.desc,ML+N_+2,y+9.5);
+      doc.setFont('helvetica','bold');doc.setFontSize(9);
+      if(r.status==='ok'){doc.setTextColor(...C.WHITE);t('✓',ML+N_+TIT+5,y+7);}
+      else{doc.setTextColor(...C.MUTED);t('○',ML+N_+TIT+5,y+7);}
+      if(r.status==='bad'){doc.setTextColor(...C.WHITE);t('✗',ML+N_+TIT+OK_+7,y+7);}
+      else{doc.setTextColor(...C.MUTED);t('○',ML+N_+TIT+OK_+7,y+7);}
+      if(r.status==='bad'){
+        doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...C.WHITE);
+        t(`P${item.probBase}×S${sev}=${item.probBase*sev}`,ML+N_+TIT+OK_+BAD+2,y+5.5);
+        doc.setFontSize(6);t(calcNivel(item.probBase,sev).label,ML+N_+TIT+OK_+BAD+2,y+9.5);
+      } else if(r.status==='na'){
+        doc.setFont('helvetica','italic');doc.setFontSize(7);doc.setTextColor(...C.NA);
+        t('N/A',ML+N_+TIT+OK_+7,y+7);
+      }
+      if(r.obs){
+        doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...C.TEXT);
+        doc.text(doc.splitTextToSize(r.obs,OBS-3).slice(0,1),ML+N_+TIT+OK_+BAD+SEV+2,y+5);
+      }
+      y+=rh;
+    });
+
+    // CONTADORES
+    y+=3;np(10);
+    const ok_=Object.values(d.respostas).filter(r=>r.status==='ok').length;
+    const bad_=Object.values(d.respostas).filter(r=>r.status==='bad').length;
+    const na_=Object.values(d.respostas).filter(r=>r.status==='na').length;
+    fill(ML,y,CW,8,C.BG);
+    doc.setFont('helvetica','bold');doc.setFontSize(7.5);
+    doc.setTextColor(...C.OK);t(`✓ ${ok_} Adequado${ok_!==1?'s':''}`,ML+4,y+5.5);
+    doc.setTextColor(...C.BAD);t(`✗ ${bad_} Inadequado${bad_!==1?'s':''}`,ML+42,y+5.5);
+    doc.setTextColor(...C.NA);t(`— ${na_} N/A`,ML+92,y+5.5);
+    y+=11;
+
+    // MATRIZ 5×5
+    y+=4;np(70);sh('3. MATRIZ DE RISCO ERGONÔMICO 5×5 (AIHA)',y);y+=8;
+    const m=calcMatrizGlobal(d.respostas);
+    if(m){
+      // Banner
+      const mCol = m.cor.match(/\d+/g).map(Number);
+      fill(ML,y,CW,12,mCol);
+      doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...m.txt.match(/\d+/g).map(Number)||[255,255,255]);
+      t(`RISCO ${m.label.toUpperCase()} — Score ${m.score}`,ML+CW/2,y+7.5,{align:'center'});
+      y+=13;
+      doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...C.TEXT);
+      t(`Probabilidade ${m.p} (${PROB_LABELS[m.p]}) × Severidade ${m.s} (${SEV_SHORT[m.s]}) = ${m.score}. Baseado no item de maior pontuação.`,ML,y);
+      y+=8;
+    } else {
+      fill(ML,y,CW,10,C.BG);
+      doc.setFont('helvetica','italic');doc.setFontSize(9);doc.setTextColor(...C.MUTED);
+      t('Nenhum item inadequado — sem score de risco a reportar.',ML+3,y+6.5);y+=12;
+    }
+
+    // Grade 5×5 no PDF
+    const cellW=(CW-20)/5, cellH=8, labelW=20;
+    // Header de severidades
+    fill(ML+labelW,y,CW-labelW,8,C.TEAL);
+    doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...C.WHITE);
+    t('Severidade →',ML+labelW+2,y+5.5);
+    [1,2,3,4,5].forEach((s,i)=>{
+      t(String(s),ML+labelW+cellW*i+cellW/2,y+5.5,{align:'center'});
+    });
+    y+=9;
+    for(let p=5;p>=1;p--){
+      fill(ML,y,labelW,cellH,C.MD);
+      doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(...C.DK);
+      t(`P${p}`,ML+2,y+5.5);
+      for(let s=1;s<=5;s++){
+        const nv=calcNivel(p,s);
+        const sc=p*s;
+        const col=nv.cor.match(/\d+/g).map(Number);
+        fill(ML+labelW+cellW*(s-1),y,cellW,cellH,col);
+        const isCur=m&&m.p===p&&m.s===s;
+        if(isCur){doc.setDrawColor(...C.TEXT);doc.setLineWidth(0.8);doc.rect(ML+labelW+cellW*(s-1),y,cellW,cellH);}
+        doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...nv.txt.match(/\d+/g).map(Number)||[255,255,255]);
+        t(String(sc),ML+labelW+cellW*(s-1)+cellW/2,y+5.5,{align:'center'});
+      }
+      y+=cellH;
+    }
+
+    // Lista inadequados
+    const badsItems=ITEMS.filter(i=>d.respostas[i.id]?.status==='bad');
+    if(badsItems.length){
+      y+=5;np(14);
+      doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...C.TEXT);
+      t('Itens inadequados que compõem o score:',ML,y);y+=6;
+      badsItems.forEach(item=>{
+        np(8);
+        const r=d.respostas[item.id];
+        const sev=r.sev||item.sevBase;
+        const sc=item.probBase*sev;
+        const nv=calcNivel(item.probBase,sev);
+        const col=nv.cor.match(/\d+/g).map(Number);
+        fill(ML,y,3,6,col);
+        doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...C.TEXT);
+        t(`${String(item.id).padStart(2,'0')}. ${item.title}`,ML+6,y+4.5);
+        doc.setFont('helvetica','bold');doc.setTextColor(...col);
+        t(`P${item.probBase}×S${sev}=${sc} (${nv.label})`,ML+CW-50,y+4.5);
+        y+=8;
+      });
+    }
+
+    // FOTOS
+    const fotosOk=d.fotos.filter(f=>f&&f.dataUrl);
+    if(fotosOk.length){
+      y+=4;np(30);sh('4. REGISTRO FOTOGRÁFICO',y);y+=8;
+      for(let fi=0;fi<fotosOk.length;fi++){
+        const foto=fotosOk[fi];
+        const fH=55;np(fH+30);
+        // foto + descrição lado a lado
+        const imgW=75,txtW=CW-imgW-6;
+        try{
+          const ext=foto.dataUrl.startsWith('data:image/png')?'PNG':'JPEG';
+          doc.addImage(foto.dataUrl,ext,ML,y,imgW,fH);
+          doc.setDrawColor(...C.MD);doc.setLineWidth(0.4);doc.rect(ML,y,imgW,fH);
+        }catch(e){}
+        // Campos texto
+        fill(ML+imgW+6,y,txtW,fH,C.BG);
+        doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...C.TEAL);
+        t(foto.titulo||`Foto ${fi+1}`,ML+imgW+9,y+5.5);
+        doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...C.TEXT);
+        const dLines=doc.splitTextToSize(foto.desc||'—',txtW-6);
+        doc.text(dLines.slice(0,7),ML+imgW+9,y+12);
+        y+=fH+8;
+      }
+    } else {
+      y+=4;np(16);sh('4. REGISTRO FOTOGRÁFICO',y);y+=8;
+      fill(ML,y,CW,10,C.BG);
+      doc.setFont('helvetica','italic');doc.setFontSize(8.5);doc.setTextColor(...C.MUTED);
+      t('Nenhuma foto anexada a esta inspeção.',ML+3,y+6.5);y+=12;
+    }
+
+    // CONCLUSÃO
+    y+=4;np(44);sh('5. PARECER ERGONÔMICO',y);y+=8;
+    let rBg=C.BG;
+    const rCols={'Aceitável':[212,244,228],'Baixo':[212,240,225],'Médio':[255,243,205],'Alto':[255,225,200],'Muito Alto':[255,210,205]};
+    if(rCols[d.risco])rBg=rCols[d.risco];
+    fill(ML,y,CW,9,rBg);
+    doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(...C.TEXT);
+    t('Classificação do Risco Ergonômico:',ML+3,y+6);
+    doc.setTextColor(...C.TEAL);t(d.risco||'Não definido',ML+72,y+6);
+    y+=11;
+    fill(ML,y,CW,6,C.MD);
+    doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(...C.TEAL);
+    t('CONCLUSÕES E RECOMENDAÇÕES',ML+2,y+4.5);y+=6;
+    fill(ML,y,CW,26,C.WHITE);
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...C.TEXT);
+    doc.text(doc.splitTextToSize(d.parecer||'—',CW-4).slice(0,4),ML+2,y+5.5);y+=28;
+
+    // ASSINATURAS
+    np(32);y+=4;sh('6. ASSINATURAS',y);y+=9;
+    const hw=CW/2-3;
+    fill(ML,y,hw,24,C.WHITE);fill(ML+hw+6,y,hw,24,C.WHITE);
+    doc.setDrawColor(...C.MD);doc.setLineWidth(0.4);doc.rect(ML,y,hw,24);doc.rect(ML+hw+6,y,hw,24);
+    doc.setDrawColor(...C.TEAL);doc.setLineWidth(0.5);
+    doc.line(ML+4,y+16,ML+hw-4,y+16);doc.line(ML+hw+10,y+16,ML+CW-4,y+16);
+    doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...C.TEAL);
+    t('Avaliador',ML+hw/2,y+20,{align:'center'});
+    t('Responsável pelo Setor',ML+hw+6+hw/2,y+20,{align:'center'});
+    doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...C.MUTED);
+    t(d.avaliador||'Nome / Cargo',ML+hw/2,y+23.5,{align:'center'});
+    t('Nome / Cargo',ML+hw+6+hw/2,y+23.5,{align:'center'});
+
+    // RODAPÉ
+    const pages=doc.internal.getNumberOfPages();
+    for(let i=1;i<=pages;i++){
+      doc.setPage(i);
+      fill(0,287,W,10,C.DK);
+      doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(200,230,228);
+      t('Clínica Villas Boas S/A — SST/RH  |  NR-17  |  Portaria MTE nº 1.419/2024',ML,292.5);
+      t(`Página ${i} / ${pages}`,W-MR,292.5,{align:'right'});
+    }
+
+    // DOWNLOAD
+    const fname=`CheckList_${(d.nome||'avaliacao').replace(/\s+/g,'_')}_${d.data_||new Date().toISOString().slice(0,10)}.pdf`;
+    const blob=doc.output('blob');
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=fname;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+    showToast('✅ PDF baixado: '+fname);
+    salvarNoHistorico(d,blob);
+
+  } catch(err){
+    console.error(err);
+    showToast('❌ Erro: '+err.message);
+  } finally {
+    btn.disabled=false; btn.textContent='⬇️ Baixar PDF da Inspeção';
+  }
+}
+
+// ════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+renderHistorico();
+buildChecklist();
+renderMatrizPreview();
+document.getElementById('f-data').value=new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
